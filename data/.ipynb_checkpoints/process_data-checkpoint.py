@@ -1,41 +1,16 @@
 import sys
-import pandas as pd
-import numpy as np
-from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
-    messages = pd.read_csv(messages_filepath)
-    categories = pd.read_csv(categories_filepath)
-    df = pd.merge(messages, categories, how='inner', on='id')
+    pass
+
 
 def clean_data(df):
-    categories = df['categories'].str.split(';', expand=True)
-    
-    row = categories.iloc[0]
-    category_colnames = row.apply(lambda x: x[:-2])
-    categories.columns = category_colnames
+    pass
 
-    for column in categories:
-        # set each value to be the last character of the string
-        categories[column] = categories[column].str[-1:]
-        
-        # convert column from string to numeric
-        categories[column] - categories[column].astype(int)
-        
-    df = df.drop(columns=['categories'])
-    
-    # concatenate the original dataframe with the new 'categories' dataframe
-    
-    df = pd.concat([df, categories], axis=1)
-    
-    df = df.drop(df[df['related'] == 2].index)
-    
-    df = df.drop_duplicates()
 
 def save_data(df, database_filename):
-    engine = create_engine('sqlite:///DisasterResponse.db')
-    df.to_sql(database_filename, engine, index=False, if_exists='replace')
+    pass  
 
 
 def main():
