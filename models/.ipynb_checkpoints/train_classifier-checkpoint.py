@@ -52,7 +52,7 @@ def build_model():
     """Creates a pipeline that converts text into word vectors, calculates Term Frequency Inverse Document Frequency, and uses Random Forest to classify message"""
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
-        ('tfidf', TfidfTransformer(ngram_range = (1,3))),
+        ('tfidf', TfidfTransformer(),
         ('clf', RandomForestClassifier(n_estimators = 50,
                                  max_features = 'auto'))
     ])
