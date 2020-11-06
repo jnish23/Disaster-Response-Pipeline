@@ -8,13 +8,14 @@ from nltk.tokenize import word_tokenize
 from flask import Flask
 from flask import render_template, request, jsonify
 from plotly.graph_objs import Bar
-from sklearn.externals import joblib
+import joblib
 from sqlalchemy import create_engine
 
 
 app = Flask(__name__)
 
 def tokenize(text):
+    """converts text to tokens, lemmatizes, and removes stop words"""
     tokens = word_tokenize(text)
     lemmatizer = WordNetLemmatizer()
 
@@ -22,15 +23,17 @@ def tokenize(text):
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).lower().strip()
         clean_tokens.append(clean_tok)
+        
+    filtered_text = [tok for tok in clean_tokens if tok not in stopwords.words('english')]
 
-    return clean_tokens
+    return filtered_text
 
 # load data
-engine = create_engine('sqlite:///../data/YourDatabaseName.db')
-df = pd.read_sql_table('YourTableName', engine)
+engine = create_engine('sqlite:///../data/DisasterResponse.db')
+df = pd.read_sql_table('messages', engine)
 
 # load model
-model = joblib.load("../models/your_model_name.pkl")
+model = joblib.load("../models/finalized_model.pkl")
 
 
 # index webpage displays cool visuals and receives user input text for model
@@ -39,32 +42,70 @@ model = joblib.load("../models/your_model_name.pkl")
 def index():
     
     # extract data needed for visuals
-    # TODO: Below is an example - modify to extract data for your own visuals
-    genre_counts = df.groupby('genre').count()['message']
-    genre_names = list(genre_counts.index)
+    # Bar Graph 1 Data
+    message_counts = df.iloc[:, 4:].sum().reset_index().sort_values(0, ascending=False)
     
+    # Series of the possible message categories
+    message_categories = message_counts['index']     
+    
+    # Number of messages in each category
+    counts = message_counts[0]                       
+    
+    # Bar Graph 2 Data
+    
+    # Gets the word count for each message
+    message_lengths = df['message'].str.split(' ').str.len().reset_index()     
+    
+    # X-value ranges
+    bins = list(range(0, 101, 5))                                              
+    
+    
+    # Groups the messages into the bins above based on word_count
+    word_count_bins = pd.cut(message_lengths.loc[message_lengths['message']<=100, 'message'],bins=bins).value_counts().sort_index().reset_index()   
+    
+    # Reformats the bins into strings because JSON could not handle the interval objects
+    word_count_bins['index'] = word_count_bins['index'].astype(str).str[1:-1].str.replace(',', ' -')
+
     # create visuals
     # TODO: Below is an example - modify to create your own visuals
     graphs = [
         {
             'data': [
                 Bar(
-                    x=genre_names,
-                    y=genre_counts
+                    x=message_categories,
+                    y=counts
                 )
             ],
 
             'layout': {
-                'title': 'Distribution of Message Genres',
+                'title': {'text':'Message Category Distribution in Training Set', 'x':0.5, 'y':0.85, 'font':{'size':25}},
                 'yaxis': {
                     'title': "Count"
                 },
                 'xaxis': {
-                    'title': "Genre"
+                    'title': "Message Category"
                 }
+            }
+        },
+        
+        {
+            'data' : [
+                Bar(
+                    x = word_count_bins['index'],
+                    y = word_count_bins['message']
+                )
+            ],
+            
+            'layout' : {
+                'title' : {'text':'Message Length', 'x':0.5, 'y':0.85, 'font':{'size':25}},
+                'xaxis' : {'tickmode':'linear', 'tick0':1, 'dtick':5, 'title':{'text':'Word Count', 'font':{'size':16}}},
+                'yaxis' : {'title': {'text':'Frequency', 'font':{'size':16}}}
             }
         }
     ]
+    
+    
+ 
     
     # encode plotly graphs in JSON
     ids = ["graph-{}".format(i) for i, _ in enumerate(graphs)]

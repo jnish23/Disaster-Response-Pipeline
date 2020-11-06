@@ -5,11 +5,13 @@ from sqlalchemy import create_engine
 
 
 def load_data(messages_filepath, categories_filepath):
+    """Loads data from CSV file"""
     messages = pd.read_csv(messages_filepath)
     categories = pd.read_csv(categories_filepath)
     df = pd.merge(messages, categories, how='inner', on='id')
 
 def clean_data(df):
+    """Cleans dataframe and prepares data for model"""
     categories = df['categories'].str.split(';', expand=True)
     
     row = categories.iloc[0]
@@ -32,12 +34,15 @@ def clean_data(df):
     df = df.drop(df[df['related'] == 2].index)
     
     df = df.drop_duplicates()
+    
+    df = df.drop(columns=['child_alone'])
 
 def save_data(df, database_filename):
+    """Saves data to SQL Database"""
     engine = create_engine('sqlite:///DisasterResponse.db')
     df.to_sql(database_filename, engine, index=False, if_exists='replace')
 
-
+df
 def main():
     if len(sys.argv) == 4:
 
