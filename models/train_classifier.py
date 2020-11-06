@@ -8,6 +8,7 @@ from nltk import word_tokenize, sent_tokenize
 from nltk.stem import WordNetLemmatizer
 nltk.download(['punkt', 'wordnet'])
 
+from nltk.corpus import stopwords
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -41,8 +42,10 @@ def tokenize(text):
     for tok in tokens:
         clean_tok = lemmatizer.lemmatize(tok).strip()
         clean_tokens.append(clean_tok)
-        
-    return clean_tokens
+    
+    filtered_sentence = [tok for tok in clean_tokens if tok not in stopwords.words('english')]
+    
+    return filtered_sentence
 
 
 def build_model():

@@ -1,27 +1,88 @@
 import sys
+# import libraries
+import pandas as pd
+import numpy as np
+from sqlalchemy import create_engine, Table, Column, Integer, MetaData
+import nltk
+from nltk import word_tokenize, sent_tokenize
+from nltk.stem import WordNetLemmatizer
+nltk.download(['punkt', 'wordnet'])
+
+from nltk.corpus import stopwords
+from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+
+from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.multioutput import MultiOutputClassifier
+import pickle
 
 
 def load_data(database_filepath):
-    pass
+    """Loads data from database"""
+    engine = create_engine('sqlite:///{}'.format(database_filepath))
+    
+    table_name = engine.table_names()[0]
+    
+    df = pd.read_sql_table(table_name, engine)
+    
+    X = df['message']
+    y = df.iloc[:, 4:]
 
 
 def tokenize(text):
-    pass
+    """Converts text to tokens, lemmatizes, and removes stop words"""
+        
+    tokens = word_tokenize(text)
+    lemmatizer = WordNetLemmatizer()
+    
+    clean_tokens = []
+    
+    for tok in tokens:
+        clean_tok = lemmatizer.lemmatize(tok).strip()
+        clean_tokens.append(clean_tok)
+    
+    filtered_sentence = [tok for tok in clean_tokens if tok not in stopwords.words('english')]
+    
+    return filtered_sentence
 
 
 def build_model():
-    pass
-
+    """Creates a pipeline that converts text into word vectors, calculates Term Frequency Inverse Document Frequency, and uses Random Forest to classify message"""
+    pipeline = Pipeline([
+        ('vect', CountVectorizer(tokenizer=tokenize)),
+        ('tfidf', TfidfTransformer(ngram_range = (1,3))),
+        ('clf', RandomForestClassifier(n_estimators = 50,
+                                 max_features = 'auto'))
+    ])
+    
+    parameters = {'vect__ngram_range' : [(1, 1), (1,3)],
+                  'tfidf' : [True, False],
+                  'clf__estimator__min_samples_split':[2, 4, 6]
+                 }
+    
+    cv = GridSearchCV(pipeline, param_grid=parameters)
+    
+    return cv
 
 def evaluate_model(model, X_test, Y_test, category_names):
-    pass
+    """Prints a classification report for each target category"""
+    y_preds = model.predict(X_test)
+    y_preds = pd.DataFrame(y_preds, columns=category_names, dtypes='int32')
+    
+    for c in category_names:
+        print(c)
+        print(classification_report(y_test[c], y_preds[c]))
 
 
 def save_model(model, model_filepath):
-    pass
+    """Saves model"""
+    pickle.dump(model, open(model_filepath, 'wb'))
 
 
 def main():
+    """Combines all previous functions into one function, and checks to ensure there are three provided arguments"""
     if len(sys.argv) == 3:
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
