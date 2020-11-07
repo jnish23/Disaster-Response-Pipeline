@@ -44,4 +44,4 @@ The model will then go on a web app built with Flask that can classify disaster 
  
  ### Licensing, Authors, Acknowledgements
  
- Credit should be given to Udacity for the starter code and FigureEight for providing the labeled data used in this project. 
+ I want to acknowledge Udacity for the project idea, guidance, and starter code. The labeled data used in this project was provided by Figure Eight.
