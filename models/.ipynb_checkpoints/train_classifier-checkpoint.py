@@ -10,7 +10,7 @@ nltk.download(['punkt', 'wordnet'])
 
 from nltk.corpus import stopwords
 from sklearn.metrics import confusion_matrix, classification_report
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.ensemble import RandomForestClassifier
 
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
@@ -29,7 +29,9 @@ def load_data(database_filepath):
     
     X = df['message']
     y = df.iloc[:, 4:]
-
+    category_names = list(y.columns)
+    
+    return X, y, category_names
 
 def tokenize(text):
     """Converts text to tokens, lemmatizes, and removes stop words"""
@@ -52,14 +54,12 @@ def build_model():
     """Creates a pipeline that converts text into word vectors, calculates Term Frequency Inverse Document Frequency, and uses Random Forest to classify message"""
     pipeline = Pipeline([
         ('vect', CountVectorizer(tokenizer=tokenize)),
-        ('tfidf', TfidfTransformer(),
-        ('clf', RandomForestClassifier(n_estimators = 50,
-                                 max_features = 'auto'))
+        ('tfidf', TfidfTransformer()),
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
     
     parameters = {'vect__ngram_range' : [(1, 1), (1,3)],
-                  'tfidf' : [True, False],
-                  'clf__estimator__min_samples_split':[2, 4, 6]
+                  'clf__estimator__min_samples_split':[2, 4]
                  }
     
     cv = GridSearchCV(pipeline, param_grid=parameters)
@@ -69,15 +69,15 @@ def build_model():
 def evaluate_model(model, X_test, Y_test, category_names):
     """Prints a classification report for each target category"""
     y_preds = model.predict(X_test)
-    y_preds = pd.DataFrame(y_preds, columns=category_names, dtypes='int32')
+    y_preds = pd.DataFrame(y_preds, columns=category_names, dtype='int32')
     
     for c in category_names:
         print(c)
-        print(classification_report(y_test[c], y_preds[c]))
+        print(classification_report(Y_test[c], y_preds[c]))
 
 
 def save_model(model, model_filepath):
-    """Saves model"""
+    """Saves model as a pkl file"""
     pickle.dump(model, open(model_filepath, 'wb'))
 
 
