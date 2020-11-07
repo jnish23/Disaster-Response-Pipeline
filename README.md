@@ -40,3 +40,8 @@ The model will then go on a web app built with Flask that can classify disaster 
     - Exports final model as a pickle file
     
  - `run.py`: a Flask Web App that visualizes the results
+ 
+ 
+ ### Licensing, Authors, Acknowledgements
+ 
+ Credit should be given to Udacity for the starter code and FigureEight for providing the labeled data used in this project. 
