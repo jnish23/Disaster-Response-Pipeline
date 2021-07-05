@@ -6,7 +6,7 @@ from sqlalchemy import create_engine, Table, Column, Integer, MetaData
 import nltk
 from nltk import word_tokenize, sent_tokenize
 from nltk.stem import WordNetLemmatizer
-nltk.download(['punkt', 'wordnet'])
+nltk.download(['punkt', 'wordnet', 'stopwords'])
 
 from nltk.corpus import stopwords
 from sklearn.metrics import confusion_matrix, classification_report
