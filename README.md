@@ -24,8 +24,6 @@ The model will then go on a web app built with Flask that can classify disaster 
 ### File Desciptions
 
 - `process_data.py`: an ETL pipeline that
-    - Loads the messages and categories datasetes. 
-    - Merges the two datasets. Cleans the
     - Loads the messages and categories datasets
     - Merges the two datasets
     - Cleans the data
