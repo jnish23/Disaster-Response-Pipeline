@@ -1,7 +1,7 @@
 # Disaster Response Pipeline Project
 
 ### Project Overview
-When a disaster strikes, there is often a flood of messages and communications on social media. This can be overwhelming to the organizations that are responding to the disaster. For example, and organization might only want to see the messages that deal with problems they are responsible for, or messages that are urgent and require immediate response.  
+When a disaster strikes, there is often a flood of messages and communications on social media. This can be overwhelming to the organizations that are responding to the disaster. For example, an organization might only want to see the messages that deal with problems they are responsible for, or messages that are urgent and require immediate response.  
 
 In this project, I will use data provided by Figure Eight to prepare an ETL (Extract-Transform-Load) pipeline, and then train a supervised machine learning model to classify these messages according to various categories (a message can be more than one category). Using this model, the messages could then be directed to the relevant organization. 
 
